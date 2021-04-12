@@ -14,6 +14,7 @@ Apify.main(async () => {
     const {
         verboseLog,
         startUrls = [],
+        proxyConfiguration,
         searchKeywords,
         maxResults,
         postsFromDate,
@@ -23,9 +24,9 @@ Apify.main(async () => {
         log.setLevel(log.LEVELS.DEBUG);
     }
 
-    if (!input.proxyConfiguration || !input.proxyConfiguration.proxyUrls || input.proxyConfiguration.proxyUrls.length === 0) {
+    if (!proxyConfiguration || !proxyConfiguration.proxyUrls || proxyConfiguration.proxyUrls.length === 0) {
         throw new Error('You need to provide proxyUrls');
-    } 
+    }
 
     const requestQueue = await Apify.openRequestQueue();
     // const proxyConfig = await utils.proxyConfiguration({
@@ -132,7 +133,7 @@ Apify.main(async () => {
         launchContext: {
             launchOptions: {
                 headless: input.headless,
-                args: ['--proxy-server=' + input.proxyConfiguration.proxyUrls[0]]
+                args: ['--proxy-server=' + proxyConfiguration.proxyUrls[0]]
             },
         },
         handlePageTimeoutSecs,
