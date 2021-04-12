@@ -14,7 +14,6 @@ Apify.main(async () => {
     const {
         verboseLog,
         startUrls = [],
-        proxyConfiguration,
         searchKeywords,
         maxResults,
         postsFromDate,
@@ -24,10 +23,14 @@ Apify.main(async () => {
         log.setLevel(log.LEVELS.DEBUG);
     }
 
+    if (!input.proxyConfiguration || !input.proxyConfiguration.proxyUrls || input.proxyConfiguration.proxyUrls.length === 0) {
+        throw new Error('You need to provide proxyUrls');
+    } 
+
     const requestQueue = await Apify.openRequestQueue();
-    const proxyConfig = await utils.proxyConfiguration({
-        proxyConfig: proxyConfiguration,
-    });
+    // const proxyConfig = await utils.proxyConfiguration({
+    //     proxyConfig: proxyConfiguration,
+    // });
 
     if (!searchKeywords && (!startUrls || !startUrls.length)) {
         throw new Error('You need to provide either searchKeywords or startUrls as input');
@@ -101,7 +104,7 @@ Apify.main(async () => {
             maxOpenPagesPerBrowser: 1,
         },
         useSessionPool: true,
-        proxyConfiguration: proxyConfig,
+        // proxyConfiguration: proxyConfig,
         preNavigationHooks: [
             async ({ page }) => {
                 await puppeteer.blockRequests(page, {
@@ -126,6 +129,12 @@ Apify.main(async () => {
                 });
             },
         ],
+        launchContext: {
+            launchOptions: {
+                headless: input.headless,
+                args: ['--proxy-server=' + input.proxyConfiguration.proxyUrls[0]]
+            },
+        },
         handlePageTimeoutSecs,
         handleFailedRequestFunction: async ({ request }) => {
             Apify.utils.log.error(`Request ${request.url} failed too many times`);
